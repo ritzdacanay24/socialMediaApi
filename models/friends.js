@@ -13,10 +13,11 @@ const FriendStatus = mongoose.model('FriendStatus', friendSchema);
 
 function validateFriend(product) {
     const schema = Joi.object({
-        User_id: Joi.string().required(),
+        User_id: Joi.number().required(),
+        Requested_by: Joi.number().required(),
         Online: Joi.boolean().required(),
         FriendStatus: Joi.string().required(),
-        Request_by: Joi.number().required(),
+        
     });
     return schema.validate(product);
 }
