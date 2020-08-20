@@ -11,8 +11,9 @@ router.post('/', async (req, res) => {
         const friends = new FriendStatus({
 
             User_id: req.body.User_id,
-            Online: req.body.Online,             //{ type: Boolean, required: true },
-            FriendStatus: req.body.FriendStatus       //{ type: String, required: true }
+            Requested_by: req.body.Requested_by,
+            Online: req.body.Online,            
+            FriendStatus: req.body.FriendStatus     
 
         });
         await friends.save();

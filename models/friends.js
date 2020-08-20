@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 
 const friendSchema = new mongoose.Schema({
-    User_id: { type: String, required: true },
-    // Requested_by:{type: Number, required: true},
+    User_id: { type: Number, required: true },
+    Requested_by:{type: Number, required: true},
     Online: { type: Boolean, required: true },
     FriendStatus: { type: String, required: true }
 })
@@ -16,7 +16,7 @@ function validateFriend(product) {
         User_id: Joi.string().required(),
         Online: Joi.boolean().required(),
         FriendStatus: Joi.string().required(),
-        // price: Joi.number().required(),
+        Request_by: Joi.number().required(),
     });
     return schema.validate(product);
 }
