@@ -6,3 +6,8 @@ const friendSchema = new mongoose.Schema({
     Online: { type: Boolean, required: true},
     FriendStatus: { type: String, required: true}
 })
+
+const FriendStatus - mongoose.model('FriendStatus',friendSchema);
+
+exports.FriendStatus=FriendStatus;
+exports.friendSchema=friendSchema;
