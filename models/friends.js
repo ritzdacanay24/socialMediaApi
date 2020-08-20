@@ -8,7 +8,7 @@ const friendSchema = new mongoose.Schema({
     FriendStatus: { type: String, required: true }
 })
 
-const FriendStatus = mongoose.model('FriendStatus', friendSchema);
+const FriendStatus = mongoose.model('Friends', friendSchema);
 
 
 function validateFriend(product) {
