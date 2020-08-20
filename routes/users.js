@@ -1,16 +1,8 @@
-const {User, firstName, lastName, email, password, validate} = require('../models/userSchema');
-const {User, validateUser} = require('../models/userSchema');
+const {User, validateUser} = require('../models/user');
 const express = require('express');
 const router = express.Router();
-const config = require('config');
 const bcrypt = require('bcrypt');
-const config = require('config');
 const jwt = require('jsonwebtoken');
-const { restart } = require('nodemon');
-
-
-
-
 
 router.post('/', async (req, res) => {
     try {
@@ -33,6 +25,7 @@ router.post('/', async (req, res) => {
         })
 
         await user.save();
+        console.log(user)
 
         return res
         // .header('x-auth-token', token)
