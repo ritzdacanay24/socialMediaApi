@@ -4,15 +4,15 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
     try {
-        const { error } = validate(req.body);
-        if (error)
-            return res.status(400).send(error);
+        // const { error } = validate(req.body);
+        // if (error)
+        //     return res.status(400).send(error);
 
         const friends = new FriendStatus({
 
             User_id: req.body.User_id,
-            // Online: { type: Boolean, required: true },
-            // FriendStatus: { type: String, required: true }
+            Online: req.body.Online,             //{ type: Boolean, required: true },
+            FriendStatus: req.body.FriendStatus       //{ type: String, required: true }
 
         });
         await friends.save();
