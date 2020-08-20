@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const config = require('config');
+
 function connectDB() {
     mongoose.connect(
         config.get('mongoURI'),
