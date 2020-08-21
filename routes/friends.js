@@ -32,7 +32,8 @@ router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
         return res.status(500).send(`Internal Server Error: ${ex}`);
     }
 
-})
 
+
+})
 
 module.exports = router;
