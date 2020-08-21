@@ -2,7 +2,13 @@ const {User, validateUser} = require('../models/user');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+
+
+
+
+
+
+
 
 router.post('/', async (req, res) => {
     try {
@@ -25,13 +31,15 @@ router.post('/', async (req, res) => {
         })
 
         await user.save();
-        console.log(user)
+        const token = user.generateAuthToken()
+        
 
         return res
-        // .header('x-auth-token', token)
-        // .header('access-control-expose-headers', 'x-auth-token')
-        .send(user);
-    }
+        .header('x-auth-token', token)
+        .header('access-control-expose-headers', 'x-auth-token')
+        .send({_id: user._id, firstName: user.firstName, email: user.email});
+        }
+
    catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`)
 }
