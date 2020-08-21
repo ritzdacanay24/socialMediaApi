@@ -56,16 +56,7 @@ return res.send(findFriendsOnline);
 
 
 
-// router.get('/friends/:User_id/:Requested_by', async (req, res) => {
-//   try{
-//     const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
-//   return res.send(findFriends);
-//
-// }catch(ex) {
-//   return res.status(500).send(`Internal Server Error: ${ex}`);
-// }
-//
-// });
+
 
 
 module.exports = router;
