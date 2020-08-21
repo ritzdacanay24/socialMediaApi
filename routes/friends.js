@@ -3,62 +3,55 @@ const express = require('express');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    try {
-        const { error } = validate(req.body);
-        if (error)
-            return res.status(400).send(error);
+  try {
+    const { error } = validate(req.body);
+    if (error)
+      return res.status(400).send(error);
 
-        const friends = new FriendStatus({
+    const friends = new FriendStatus({
+      userId: req.body.userId,
+      requestedBy: req.body.requestedBy,
+      online: req.body.online,
+      friendStatus: req.body.friendStatus
+    });
 
-            User_id: req.body.User_id,
-            Requested_by: req.body.Requested_by,
-            Online: req.body.Online,
-            FriendStatus: req.body.FriendStatus
-
-        });
-        await friends.save();
-        return res.send(friends);
-    } catch (ex) {
-        return res.status(500).send(`Internal Server Error: ${ex}`);
-    }
+    await friends.save();
+    return res.send(friends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
-router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
-
-    try {
-        const friendRequest = await FriendStatus.find({ "Requested_by": req.params.Requested_by, "FriendStatus": req.params.FriendStatus });
-        return res.send(friendRequest);
-    } catch (ex) {
-        return res.status(500).send(`Internal Server Error: ${ex}`);
-    }
-
+router.get('/pendingRequests/:requestedBy/:friendStatus', async (req, res) => {
+  try {
+    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": req.params.friendStatus });
+    return res.send(friendRequest);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 })
 
-router.get('/friends/:User_id/:Requested_by', async (req, res) => {
-try{
-  const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by});
-return res.send(findFriends);
-}catch(ex) {
-  return res.status(500).send(`Internal Server Error: ${ex}`);
-}
-
+router.get('/friends/:userId/:requestedBy', async (req, res) => {
+  try {
+    const findFriends = await FriendStatus.find({ "userId": req.params.userId, "requestedBy": req.params.requestedBy });
+    return res.send(findFriends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
-router.get('/friends/:User_id/:Requested_by/:Online', async (req, res) => {
-try{
-  const findFriendsOnline = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
-return res.send(findFriendsOnline);
-}catch(ex) {
-  return res.status(500).send(`Internal Server Error: ${ex}`);
-}
-
+router.get('/friends/:userId/:requestedBy/:online', async (req, res) => {
+  try {
+    const findFriendsonline = await FriendStatus.find({ "userId": req.params.userId, "requestedBy": req.params.requestedBy, "online": req.params.online });
+    return res.send(findFriendsonline);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
-
-
-// router.get('/friends/:User_id/:Requested_by', async (req, res) => {
+// router.get('/friends/:userId/:requestedBy', async (req, res) => {
 //   try{
-//     const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
+//     const findFriends = await Friends.find({"userId": req.params.userId, "requestedBy": req.params.requestedBy, "online": req.params.online});
 //   return res.send(findFriends);
 //
 // }catch(ex) {
