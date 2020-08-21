@@ -2,6 +2,7 @@ const { Post, validatePost} = require('../models/post');
 const express = require('express');
 const router = express.Router();
 
+
 router.post('/', async (req, res) => {
     try {
         const { error } = validatePost(req.body);
@@ -22,4 +23,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.delete("/:id", function(req, res, next) {
+
+    Post.findByIdAndRemove(req.params.id, req.body, function(err, post) {
+     if (err) return next(err);
+     res.json(post);
+    });
+    
+   });
+
 module.exports = router;
+
