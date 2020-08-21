@@ -34,5 +34,26 @@ router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
 
 })
 
+router.get('/api/friends/:User_id/:Requested_by', (req, res) => {
+try{
+  const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by});
+return res.send(findFriends);
+}catch(ex) {
+  return res.status(500).send(`Internal Server Error: ${ex}`);
+}
+
+});
+
+router.get('/api/friends/:User_id/:Requested_by/:Online', (req, res) => {
+try{
+  const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
+return res.send(findFriends);
+}catch(ex) {
+  return res.status(500).send(`Internal Server Error: ${ex}`);
+}
+
+});
+
+
 
 module.exports = router;
