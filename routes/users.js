@@ -31,4 +31,15 @@ router.post('/', async (req, res) => {
     }
 })
 
+router.get('/', async (req, res) => {
+    try {
+        let user = await User.find();
+        return res.send(user);
+    }
+
+    catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`)
+    }
+})
+
 module.exports = router
