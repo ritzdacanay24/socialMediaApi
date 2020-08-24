@@ -37,17 +37,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
-
-    try {
-        const friendRequest = await FriendStatus.find({ "Requested_by": req.params.Requested_by, "FriendStatus": req.params.FriendStatus });
-        return res.send(friendRequest);
-    } catch (ex) {
-        return res.status(500).send(`Internal Server Error: ${ex}`);
-    }
-
-=======
 //View Pending friend requests
 router.get('/pendingRequests/:requestedBy/:friendStatus', async (req, res) => {
   try {
@@ -57,7 +46,6 @@ router.get('/pendingRequests/:requestedBy/:friendStatus', async (req, res) => {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
 })
->>>>>>> 664b805fcafc06286e023f8c54a562c78746c5df
 
 //View all friends
 router.get('/friends/:requestedBy', async (req, res) => {
@@ -99,10 +87,4 @@ router.get('/onlineFriends/:requestedBy', async (req, res) => {
 //
 // });
 
-<<<<<<< HEAD
-
-})
-
-=======
->>>>>>> 664b805fcafc06286e023f8c54a562c78746c5df
 module.exports = router;
