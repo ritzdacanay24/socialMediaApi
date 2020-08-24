@@ -2,22 +2,21 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 
 const friendSchema = new mongoose.Schema({
-    User_id: { type: Number, required: true },
-    Requested_by:{type: Number, required: true},
-    Online: { type: Boolean, required: true },
-    FriendStatus: { type: String, required: true }
+    userId: { type: String, required: true },
+    requestedBy: { type: String, required: true },
+    online: { type: Boolean, required: true },
+    friendStatus: { type: String, required: true }
 })
 
 const FriendStatus = mongoose.model('Friends', friendSchema);
 
-
 function validateFriend(product) {
     const schema = Joi.object({
-        User_id: Joi.number().required(),
-        Requested_by: Joi.number().required(),
-        Online: Joi.boolean().required(),
-        FriendStatus: Joi.string().required(),
-        
+        userId: Joi.string().required(),
+        requestedBy: Joi.string().required(),
+        online: Joi.boolean().required(),
+        friendStatus: Joi.string().required(),
+
     });
     return schema.validate(product);
 }

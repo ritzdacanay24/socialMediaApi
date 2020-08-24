@@ -1,28 +1,43 @@
 const { FriendStatus, validate, friendSchema } = require('../models/friends');
+const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 
+function getFriendInfo(findFriends) {
+  let userId = [];
+  //second get all online status from user object
+  findFriends.forEach(function (user) {
+    userId.push(user.userId)
+  });
+  return userId;
+}
+
+//Send a friend request. 
 router.post('/', async (req, res) => {
-    try {
-        const { error } = validate(req.body);
-        if (error)
-            return res.status(400).send(error);
+  try {
+    const { error } = validate(req.body);
+    if (error)
+      return res.status(400).send(error);
 
-        const friends = new FriendStatus({
+    const findUser = await User.findById(req.body.requestedBy);
+    if (!findUser)
+      return res.send('User not found');
 
-            User_id: req.body.User_id,
-            Requested_by: req.body.Requested_by,
-            Online: req.body.Online,
-            FriendStatus: req.body.FriendStatus
+    const friends = new FriendStatus({
+      userId: req.body.userId,
+      requestedBy: req.body.requestedBy,
+      online: req.body.online,
+      friendStatus: req.body.friendStatus
+    });
 
-        });
-        await friends.save();
-        return res.send(friends);
-    } catch (ex) {
-        return res.status(500).send(`Internal Server Error: ${ex}`);
-    }
+    await friends.save();
+    return res.send(friends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
+<<<<<<< HEAD
 router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
 
     try {
@@ -32,32 +47,50 @@ router.get('/pendingRequests/:Requested_by/:FriendStatus', async (req, res) => {
         return res.status(500).send(`Internal Server Error: ${ex}`);
     }
 
+=======
+//View Pending friend requests
+router.get('/pendingRequests/:requestedBy/:friendStatus', async (req, res) => {
+  try {
+    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": req.params.friendStatus });
+    return res.send(friendRequest);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
+})
+>>>>>>> 664b805fcafc06286e023f8c54a562c78746c5df
 
-router.get('/friends/:User_id/:Requested_by', async (req, res) => {
-try{
-  const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by});
-return res.send(findFriends);
-}catch(ex) {
-  return res.status(500).send(`Internal Server Error: ${ex}`);
-}
-
+//View all friends
+router.get('/friends/:requestedBy', async (req, res) => {
+  try {
+    const findFriends = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Confirmed' });
+    return res.send(findFriends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
-router.get('/friends/:User_id/:Requested_by/:Online', async (req, res) => {
-try{
-  const findFriendsOnline = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
-return res.send(findFriendsOnline);
-}catch(ex) {
-  return res.status(500).send(`Internal Server Error: ${ex}`);
-}
+//View online friends
+router.get('/onlineFriends/:requestedBy', async (req, res) => {
+  try {
+    //first get all friends
+    const findFriends = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Confirmed' });
 
+    //put users into an array
+    let userId = getFriendInfo(findFriends);
+
+    //from the userarray find users in the users collections
+    const friends = await User.find({ "_id": { $in: userId }, "loginTime": { "$ne": null } }, ['firstName', 'lastName']);
+
+    //send friends online
+    return res.send(friends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
 });
 
-
-
-// router.get('/friends/:User_id/:Requested_by', async (req, res) => {
+// router.get('/friends/:userId/:requestedBy', async (req, res) => {
 //   try{
-//     const findFriends = await Friends.find({"User_id": req.params.User_id, "Requested_by": req.params.Requested_by, "Online": req.params.Online});
+//     const findFriends = await Friends.find({"userId": req.params.userId, "requestedBy": req.params.requestedBy, "online": req.params.online});
 //   return res.send(findFriends);
 //
 // }catch(ex) {
@@ -66,7 +99,10 @@ return res.send(findFriendsOnline);
 //
 // });
 
+<<<<<<< HEAD
 
 })
 
+=======
+>>>>>>> 664b805fcafc06286e023f8c54a562c78746c5df
 module.exports = router;
