@@ -58,33 +58,29 @@ router.get('/friends/:requestedBy', async (req, res) => {
 });
 
 //View online friends
-router.get('/onlineFriends/:requestedBy', async (req, res) => {
+router.get('/onlineFriends/:loggedInUserId', async (req, res) => {
   try {
-    //first get all friends
-    const findFriends = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Confirmed' });
 
-    //put users into an array
-    let userArray = getFriendInfo(findFriends);
+    const loggedInUserId = req.params.loggedInUserId;
+    let findFriends = [];
 
-    //from the userarray find users in the users collections
-    const friends = await User.find({ "_id": { $in: userArray }, "loginTime": { "$ne": null } }, ['firstName', 'lastName']);
+    //Confirmed friends. If the recipient accepts the friend request, get the id of that requestor.
+    findFriends = await FriendStatus.find({ "requestedBy": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('userId');
+
+    if (!findFriends.length)
+      //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
+      findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
+      
+    //get friends from user collection that is logged in
+    const allMyFriends = await User.find({ "_id": { $in: findFriends }, "loginTime": { "$ne": null } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
+    
+    if(!allMyFriends.length) return res.send('Sorry you have no friends online');
 
     //send friends online
-    return res.send(friends);
+    return res.send(allMyFriends);
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
 });
-
-// router.get('/friends/:userId/:requestedBy', async (req, res) => {
-//   try{
-//     const findFriends = await Friends.find({"userId": req.params.userId, "requestedBy": req.params.requestedBy, "online": req.params.online});
-//   return res.send(findFriends);
-//
-// }catch(ex) {
-//   return res.status(500).send(`Internal Server Error: ${ex}`);
-// }
-//
-// });
 
 module.exports = router;
