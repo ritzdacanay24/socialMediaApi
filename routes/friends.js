@@ -47,11 +47,25 @@ router.get('/pendingRequests/:requestedBy', async (req, res) => {
   }
 })
 
-//View all friends
-router.get('/friends/:requestedBy', async (req, res) => {
+//View all confirmed friends
+router.get('/friends/:loggedInUserId', async (req, res) => {
   try {
-    const findFriends = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Confirmed' });
-    return res.send(findFriends);
+
+    const loggedInUserId = req.params.loggedInUserId;
+    let findFriends = [];
+
+    //Confirmed friends. If the recipient accepts the friend request, get the id of that requestor.
+    findFriends = await FriendStatus.find({ "requestedBy": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('userId');
+
+    if (!findFriends.length)
+      //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
+      findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
+      
+    //get friends from user collection
+    const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
+    if(!allMyFriends.length) return res.send('Sorry you have no friends');
+
+    return res.send(allMyFriends);
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
