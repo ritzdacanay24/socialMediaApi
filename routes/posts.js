@@ -4,6 +4,15 @@ const { FriendStatus } = require('../models/friends');
 const express = require('express');
 const router = express.Router();
 
+function getFriendInfo(findFriends) {
+    let userId = [];
+    //second get all online status from user object
+    findFriends.forEach(function (user) {
+      userId.push(user.userId)
+    });
+    return userId;
+  }
+
 router.post('/', async (req, res) => {
     try {
         const { error } = validatePost(req.body);
@@ -31,11 +40,7 @@ router.get('/viewFriendPosts/:userId', async (req, res) => {
 
         //first get my friends
         const findFriends = await FriendStatus.find({ "requestedBy": req.params.userId, "friendStatus": 'Confirmed' }).sort('-date');
-        if (!findFriends) return res.send(`Sorry you have no friends`);
-
-        //first get my friends
-        const findFriends1 = await FriendStatus.find({ "userId": req.params.userId, "friendStatus": 'Confirmed' }).sort('-date');
-        if (!findFriends) return res.send(`Sorry you have no friends`);
+        if (!findFriends) return res.send(`You are han solo. You have no friends!`);
         
         //get my friends posts
         //put users into an array
@@ -57,6 +62,7 @@ router.get('/viewFriendPosts/:userId', async (req, res) => {
             },
             {
                 $project: {
+                    id: '$userInfo._id',
                     firstName: '$userInfo.firstName',
                     lastName: '$userInfo.lastName',
                     comment: '$comment',
