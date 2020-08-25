@@ -38,9 +38,9 @@ router.post('/', async (req, res) => {
 });
 
 //View Pending friend requests
-router.get('/pendingRequests/:requestedBy/:friendStatus', async (req, res) => {
+router.get('/pendingRequests/:requestedBy', async (req, res) => {
   try {
-    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": req.params.friendStatus });
+    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Pending' });
     return res.send(friendRequest);
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
@@ -64,10 +64,10 @@ router.get('/onlineFriends/:requestedBy', async (req, res) => {
     const findFriends = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Confirmed' });
 
     //put users into an array
-    let userId = getFriendInfo(findFriends);
+    let userArray = getFriendInfo(findFriends);
 
     //from the userarray find users in the users collections
-    const friends = await User.find({ "_id": { $in: userId }, "loginTime": { "$ne": null } }, ['firstName', 'lastName']);
+    const friends = await User.find({ "_id": { $in: userArray }, "loginTime": { "$ne": null } }, ['firstName', 'lastName']);
 
     //send friends online
     return res.send(friends);
