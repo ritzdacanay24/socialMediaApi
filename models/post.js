@@ -4,9 +4,9 @@ const Joi = require('joi');
 const postSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     comment: { type: String, required: true },
-    likes: { type: Number, required: false },
-    dislikes: { type: Number, required: false },
-    createdDate: { type: Date, required: true, default:Date }
+    likes: { type: Number, required: false, default: 0 },
+    dislikes: { type: Number, required: false, default: 0 },
+    createdDate: { type: Date, required: true, default: Date }
 });
 const Post = mongoose.model('Posts', postSchema);
 
