@@ -4,14 +4,7 @@ const { FriendStatus } = require('../models/friends');
 const express = require('express');
 const router = express.Router();
 
-function getFriendInfo(findFriends) {
-    let userId = [];
-    //second get all online status from user object
-    findFriends.forEach(function (user) {
-      userId.push(user.userId)
-    });
-    return userId;
-  }
+
 
 router.post('/', async (req, res) => {
     try {
@@ -33,30 +26,25 @@ router.post('/', async (req, res) => {
     }
 });
 
-
 //view friends posts
 router.get('/viewFriendPosts/:userId', async (req, res) => {
     try {
 
-        //first get my friends
-        const findFriends = await FriendStatus.find({ "requestedBy": req.params.userId, "friendStatus": 'Confirmed' }).sort('-date');
-        if (!findFriends) return res.send(`You are han solo. You have no friends!`);
-        
-        //get my friends posts
-        //put users into an array
-        let myFriends = getFriendInfo(findFriends);
+        let findFriends = []; 
+        //Confirmed friends. If the recipent accepts the friend request, get the id of that requestor.
+        findFriends = await FriendStatus.find({ "requestedBy": req.params.userId, "friendStatus": 'Confirmed' }).sort('-date').distinct('userId');
+
+        if(!findFriends.length)
+        //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
+        findFriends = await FriendStatus.find({ "userId": req.params.userId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
         
         let result = await Post.aggregate([
-            {
-                $match:
-                {
-                    'userId':
-                        { $in: myFriends }
-                }
-            },
-            { "$addFields": { "userId": { "$toObjectId": "$userId" } } },
-
-            { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" } },
+            { 
+                $match: { 'userId': { $in: findFriends } }
+            },{ 
+                "$addFields" : { "userId": { "$toObjectId": "$userId" } } 
+            },{ 
+                $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" } },
             {
                 $unwind: "$userInfo"
             },
@@ -70,7 +58,6 @@ router.get('/viewFriendPosts/:userId', async (req, res) => {
                     dislikes: '$dislikes'
                 }
             }
-
         ]);
         return res.send(result);
 
