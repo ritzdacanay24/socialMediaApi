@@ -80,6 +80,35 @@ router.get('/viewFriendPosts/:userId', async (req, res) => {
     }
 });
 
+//view all posts
+router.get('/', async (req, res) => {
+    try {
+        
+        let result = await Post.aggregate([
+            { "$addFields": { "userId": { "$toObjectId": "$userId" } } },
+            { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" } },
+            { $unwind: "$userInfo" },
+            {
+                $project: {
+                    createdById: '$userInfo._id',
+                    firstName: '$userInfo.firstName',
+                    lastName: '$userInfo.lastName',
+                    comment: '$comment',
+                    likes: '$likes',
+                    dislikes: '$dislikes'
+                }
+            }
+
+        ]);
+
+        return res.send(result);
+
+
+    } catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`);
+    }
+});
+
 router.delete("/:id", function (req, res, next) {
 
     Post.findByIdAndRemove(req.params.id, req.body, function (err, post) {
