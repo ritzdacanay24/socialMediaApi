@@ -13,21 +13,28 @@ function getFriendInfo(findFriends) {
 }
 
 //Send a friend request. 
-router.post('/', async (req, res) => {
+router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) => {
   try {
-    const { error } = validate(req.body);
-    if (error)
-      return res.status(400).send(error);
 
-    const findUser = await User.findById(req.body.requestedBy);
+    //check if the friend id is in the database.
+    const findUser = await User.findById(req.params.friendRequestId)
+  
     if (!findUser)
-      return res.send('User not found');
+      return res.send('Friend id not found');
+      
+    //check if a friend request was already submiited.
+    const friendRequestPending = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "userId": req.params.friendRequestId, "friendStatus": 'Pending' });
+    if (friendRequestPending.length > 0)
+      return res.send('Friend request has not been accepted yet.');
+
+    //check if the recipient is already a friend.
+    const friendRequestConfirmed = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' });
+    if (friendRequestConfirmed.length > 0)
+      return res.send('You are already friends with this user.');
 
     const friends = new FriendStatus({
-      userId: req.body.userId,
-      requestedBy: req.body.requestedBy,
-      online: req.body.online,
-      friendStatus: req.body.friendStatus
+      userId: req.params.friendRequestId,
+      requestedBy: req.params.loggedInUserId
     });
 
     await friends.save();
@@ -60,10 +67,10 @@ router.get('/friends/:loggedInUserId', async (req, res) => {
     if (!findFriends.length)
       //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
       findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
-      
+
     //get friends from user collection
     const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
-    if(!allMyFriends.length) return res.send('Sorry you have no friends');
+    if (!allMyFriends.length) return res.send('Sorry you have no friends');
 
     return res.send(allMyFriends);
   } catch (ex) {
@@ -84,11 +91,11 @@ router.get('/onlineFriends/:loggedInUserId', async (req, res) => {
     if (!findFriends.length)
       //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
       findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
-      
+
     //get friends from user collection that is logged in
     const allMyFriends = await User.find({ "_id": { $in: findFriends }, "loginTime": { "$ne": null } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
-    
-    if(!allMyFriends.length) return res.send('Sorry you have no friends online');
+
+    if (!allMyFriends.length) return res.send('Sorry you have no friends online');
 
     //send friends online
     return res.send(allMyFriends);
