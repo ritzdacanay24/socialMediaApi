@@ -3,15 +3,6 @@ const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 
-function getFriendInfo(findFriends) {
-  let userId = [];
-  //second get all online status from user object
-  findFriends.forEach(function (user) {
-    userId.push(user.userId)
-  });
-  return userId;
-}
-
 //Send a friend request. 
 router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) => {
   try {
@@ -47,8 +38,13 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
 //View Pending friend requests
 router.get('/pendingRequests/:requestedBy', async (req, res) => {
   try {
-    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Pending' });
-    return res.send(friendRequest);
+    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Pending' }).distinct('userId');
+    if (!friendRequest.length) return res.send('Sorry you have no pending friend requests.');
+
+    const allMyFriends = await User.find({ "_id": { $in: friendRequest } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
+    if (!allMyFriends.length) return res.send('Sorry, this users is not found.');
+
+    return res.send(allMyFriends);
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
