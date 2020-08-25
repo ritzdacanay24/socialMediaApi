@@ -36,9 +36,9 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
 });
 
 //View Pending friend requests
-router.get('/pendingRequests/:requestedBy', async (req, res) => {
+router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
   try {
-    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.requestedBy, "friendStatus": 'Pending' }).distinct('userId');
+    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Pending' }).distinct('userId');
     if (!friendRequest.length) return res.send('Sorry you have no pending friend requests.');
 
     const allMyFriends = await User.find({ "_id": { $in: friendRequest } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
