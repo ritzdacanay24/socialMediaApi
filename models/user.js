@@ -3,34 +3,30 @@ const Joi = require('joi');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
-
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
-    lastName: {type: String, required: true },
-    email: {type: String, unique: true, required: true },
-    password: {type: String, minlength: 6, required: true},
-    timeStamp: {type: Date, timeStamp: true, default: Date},
-    loginTime: {type: Date, timeStamp: true, default: null},
-    profileImage: {type: String}
+    lastName: { type: String, required: true },
+    email: { type: String, unique: true, required: true },
+    password: { type: String, minlength: 6, required: true },
+    timeStamp: { type: Date, timeStamp: true, default: Date },
+    loginTime: { type: Date, timeStamp: true, default: Date },
+    profileImage: { type: String }
 })
 
 userSchema.methods.generateAuthToken = function () {
-    return jwt.sign({ _id: this._id, firstName: this.firstName, email: this.email}, config.get('jwtSecret'));
-   };
-   
+    return jwt.sign({ _id: this._id, firstName: this.firstName, email: this.email }, config.get('jwtSecret'));
+};
 
 const User = mongoose.model('User', userSchema);
 
 function validateUser(user) {
     const schema = Joi.object({
-    firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
-    email: Joi.string().required(),
-    password: Joi.string().required().min(6),
-    timeStamp: Joi.date(), 
-    profileImage: Joi.string()
-    
-
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
+        email: Joi.string().required(),
+        password: Joi.string().required().min(6),
+        timeStamp: Joi.date(),
+        profileImage: Joi.string()
     });
     return schema.validate(user);
 }
