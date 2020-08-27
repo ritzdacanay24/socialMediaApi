@@ -42,4 +42,16 @@ router.get('/', async (req, res) => {
     }
 })
 
+router.get('/:loggedInUserId', async (req, res) => {
+    try {
+        let user = await User.find({ _id: req.params.loggedInUserId });
+        
+        return res.send(user);
+    }
+
+    catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`)
+    }
+})
+
 module.exports = router
