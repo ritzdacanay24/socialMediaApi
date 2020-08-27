@@ -24,7 +24,7 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
       return res.send('Sorry, you cant send a friend request to the person who sent you a friend request silly! How about accepting their invite?');
 
     //check if the recipient is already a friend.
-    const friendRequestConfirmed = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' });
+    const friendRequestConfirmed = await FriendStatus.find({ $or:[ {'requestedBy':req.params.loggedInUserId}, {'userId':req.params.loggedInUserId} ] , "friendStatus": 'Confirmed' });
     if (friendRequestConfirmed.length > 0)
       return res.send('You are already friends with this user.');
 
