@@ -94,6 +94,7 @@ router.get('/friends/:loggedInUserId', async (req, res) => {
     //get friends from user collection
     const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
     if (!allMyFriends.length) return res.send('Sorry you have no friends');
+    
 
     return res.send(allMyFriends);
   } catch (ex) {
@@ -149,13 +150,31 @@ router.put('/accept/:id', async (req, res) => {
   }
 });
 
-//Delete pending friend request or delete friend
+//Delete pending friend request
 router.delete('/delete/:id', async (req, res) => {
   try {
 
     FriendStatus.findByIdAndRemove(req.params.id, function (err, post) {
       if (err) return next(err);
       res.json(post);
+    });
+
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
+});
+
+//Delete confirmed friend
+router.delete('/deleteFriend/:loggedInUserId/:userFriendId', async (req, res) => {
+  try {
+
+    const findFriendId = await FriendStatus.findOne({ $or:[ {'requestedBy':req.params.loggedInUserId}, {'userId':req.params.loggedInUserId} ], $or:[ {'requestedBy':req.params.userFriendId}, {'userId':req.params.userFriendId} ] }).distinct('_id');
+    console.log(findFriendId)
+    if(!findFriendId.length) return res.send('Sorry unable to delete A-hole friend!');
+    
+    FriendStatus.findByIdAndRemove(findFriendId[0], function (err, post) {
+      if (err) return next(err);
+      res.json({message: "A-hole friend deleted!"});
     });
 
   } catch (ex) {
