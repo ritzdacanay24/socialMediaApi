@@ -144,4 +144,18 @@ router.put('/accept/:id', async (req, res) => {
   }
 });
 
+//Delete pending friend request or delete friend
+router.delete('/delete/:id', async (req, res) => {
+  try {
+
+    FriendStatus.findByIdAndRemove(req.params.id, function (err, post) {
+      if (err) return next(err);
+      res.json(post);
+    });
+
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
+});
+
 module.exports = router;
