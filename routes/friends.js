@@ -40,18 +40,18 @@ router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
   try {
 
     let result = await FriendStatus.aggregate([
-      {
-        $match: { "requestedBy": req.params.loggedInUserId, "friendStatus": 'Pending' }
+      { $match: { "userId": req.params.loggedInUserId, "friendStatus": 'Pending' }
       },
-      { "$addFields": { "userId": { "$toObjectId": "$userId" } } },
-      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" } },
+      { "$addFields": { "requestedBy": { "$toObjectId": "$requestedBy" } } },
+      { $lookup: { from: "users", localField: "requestedBy", foreignField: "_id", as: "userInfo" } },
       { $unwind: "$userInfo" },
       {
         $project: {
           _id: '$_id',
           friendStatus: '$friendStatus',
+          userId: '$userId',
           requestedBy: '$requestedBy',
-          friendInfo: {
+          requestedByInfo: {
             _id: '$userInfo._id',
             firstName: '$userInfo.firstName',
             lastName: '$userInfo.lastName',
