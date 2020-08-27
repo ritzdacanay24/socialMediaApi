@@ -18,6 +18,11 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
     if (friendRequestPending.length > 0)
       return res.send('Friend request has not been accepted yet.');
 
+    //cant send friend request back to the sender vice versa. 
+    const checkReverseSendRequest = await FriendStatus.find({ "userId": req.params.loggedInUserId, "requestedBy": req.params.friendRequestId, "friendStatus": 'Pending' });
+    if (checkReverseSendRequest.length > 0)
+      return res.send('Sorry, you cant send a friend request to the person who sent you a friend request silly! How about accepting their invite?');
+
     //check if the recipient is already a friend.
     const friendRequestConfirmed = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' });
     if (friendRequestConfirmed.length > 0)
