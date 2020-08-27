@@ -50,11 +50,14 @@ router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
         $project: {
           _id: '$_id',
           friendStatus: '$friendStatus',
-          friendId: '$userInfo._id',
-          firstName: '$userInfo.firstName',
-          lastName: '$userInfo.lastName',
-          email: '$userInfo.email',
-          profileImage: '$userInfo.profileImage',
+          requestedBy: '$requestedBy',
+          friendInfo: {
+            _id: '$userInfo._id',
+            firstName: '$userInfo.firstName',
+            lastName: '$userInfo.lastName',
+            email: '$userInfo.email',
+            profileImage: '$userInfo.profileImage'
+          }
         }
       }
 
@@ -63,7 +66,7 @@ router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
     if (!result.length) return res.send('Sorry you have no pending friend requests.');
 
     return res.send(result);
-    
+
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
