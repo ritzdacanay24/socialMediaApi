@@ -38,13 +38,32 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
 //View Pending friend requests
 router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
   try {
-    const friendRequest = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Pending' }).distinct('userId');
-    if (!friendRequest.length) return res.send('Sorry you have no pending friend requests.');
 
-    const allMyFriends = await User.find({ "_id": { $in: friendRequest } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
-    if (!allMyFriends.length) return res.send('Sorry, this users is not found.');
+    let result = await FriendStatus.aggregate([
+      {
+        $match: { "requestedBy": req.params.loggedInUserId, "friendStatus": 'Pending' }
+      },
+      { "$addFields": { "userId": { "$toObjectId": "$userId" } } },
+      { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" } },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          _id: '$_id',
+          friendStatus: '$friendStatus',
+          friendId: '$userInfo._id',
+          firstName: '$userInfo.firstName',
+          lastName: '$userInfo.lastName',
+          email: '$userInfo.email',
+          profileImage: '$userInfo.profileImage',
+        }
+      }
 
-    return res.send(allMyFriends);
+    ]);
+
+    if (!result.length) return res.send('Sorry you have no pending friend requests.');
+
+    return res.send(result);
+    
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
@@ -113,7 +132,7 @@ router.put('/accept/:id', async (req, res) => {
     );
     if (!friendRequest)
       return res.status(400).send(`The friend with id "${req.params.id}" does not exist.`);
-      
+
     await friendRequest.save();
     return res.send(friendRequest);
 
