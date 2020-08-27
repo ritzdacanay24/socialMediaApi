@@ -9,10 +9,10 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
 
     //check if the friend id is in the database.
     const findUser = await User.findById(req.params.friendRequestId)
-  
+
     if (!findUser)
       return res.send('Friend id not found');
-      
+
     //check if a friend request was already submiited.
     const friendRequestPending = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "userId": req.params.friendRequestId, "friendStatus": 'Pending' });
     if (friendRequestPending.length > 0)
@@ -95,6 +95,28 @@ router.get('/onlineFriends/:loggedInUserId', async (req, res) => {
 
     //send friends online
     return res.send(allMyFriends);
+  } catch (ex) {
+    return res.status(500).send(`Internal Server Error: ${ex}`);
+  }
+});
+
+//Accept Friend Request
+router.put('/accept/:id', async (req, res) => {
+  try {
+
+    const friendRequest = await FriendStatus.findByIdAndUpdate(
+      req.params.id,
+      {
+        friendStatus: 'Confirmed'
+      },
+      { new: true }
+    );
+    if (!friendRequest)
+      return res.status(400).send(`The friend with id "${req.params.id}" does not exist.`);
+      
+    await friendRequest.save();
+    return res.send(friendRequest);
+
   } catch (ex) {
     return res.status(500).send(`Internal Server Error: ${ex}`);
   }
