@@ -46,7 +46,7 @@ router.get('/:loggedInUserId', async (req, res) => {
     try {
         let user = await User.find({ _id: req.params.loggedInUserId });
         
-        return res.send(user);
+        return res.send(user[0]);
     }
 
     catch (ex) {
