@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
         return res
             .header('x-auth-token', token)
             .header('access-control-expose-headers', 'x-auth-token')
-            .send({ _id: user._id, firstName: user.firstName, email: user.email });
+            .send({ _id: user._id, firstName: user.firstName, email: user.email, token: token });
     }
     catch (ex) {
         return res.status(500).send(`Internal Server Error: ${ex}`);
@@ -28,14 +28,11 @@ router.post('/', async (req, res) => {
 });
 
 function validateLogin(req) {
-
     const schema = Joi.object({
         email: Joi.string().min(5).max(255).required().email(),
         password: Joi.string().min(5).max(1024).required(),
-
     });
     return schema.validate(req);
 }
-
 
 module.exports = router;
