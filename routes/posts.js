@@ -37,7 +37,9 @@ router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
         let result = await Post.aggregate([
             {
                 $match: { 'userId': { $in: findFriends } }
-            }, {
+            }, 
+                { $sort: { createdDate: -1 } 
+            },  {
                 "$addFields": { "userId": { "$toObjectId": "$userId" } }
             }, {
                 $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" }
@@ -52,12 +54,11 @@ router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
                     lastName: '$userInfo.lastName',
                     comment: '$comment',
                     likes: '$likes',
-                    dislikes: '$dislikes'
+                    dislikes: '$dislikes',
+                    createdDate: {$dateToString: { format: "%Y-%m-%d %H:%m:%S", date: "$createdDate" }}
                 }
             }
         ]);
-
-        if (!result.length) return res.send('We did not find any posts from your friends.')
 
         return res.send(result);
     } catch (ex) {
@@ -85,8 +86,6 @@ router.get('/', async (req, res) => {
             }
 
         ]);
-
-        if (!result.length) return res.send('No posts found!')
 
         return res.send(result);
     } catch (ex) {
