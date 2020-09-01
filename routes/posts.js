@@ -26,22 +26,23 @@ router.post('/', async (req, res) => {
 router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
     try {
 
-        let findFriends = []; 
+        let findFriends = [];
         //Confirmed friends. If the recipent accepts the friend request, get the id of that requestor.
         findFriends = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('userId');
 
-        if(!findFriends.length)
-        //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
-        findFriends = await FriendStatus.find({ "userId": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
+        if (!findFriends.length)
+            //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
+            findFriends = await FriendStatus.find({ "userId": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
 
         //view user logged in posts
         findFriends.push(req.params.loggedInUserId);
         let result = await Post.aggregate([
             {
                 $match: { 'userId': { $in: findFriends } }
-            }, 
-                { $sort: { createdDate: -1 } 
-            },  {
+            },
+            {
+                $sort: { createdDate: -1 }
+            }, {
                 "$addFields": { "userId": { "$toObjectId": "$userId" } }
             }, {
                 $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "userInfo" }
@@ -57,7 +58,7 @@ router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
                     comment: '$comment',
                     likes: '$likes',
                     dislikes: '$dislikes',
-                    createdDate: {$dateToString: { format: "%Y-%m-%d %H:%m:%S", date: "$createdDate" }}
+                    createdDate: { $dateToString: { format: "%Y-%m-%d %H:%m:%S", date: "$createdDate" } }
                 }
             }
         ]);
@@ -101,8 +102,24 @@ router.delete("/:id", function (req, res, next) {
         if (err) return next(err);
         res.json(post);
     });
-
 });
+
+
+//like/dislike a post
+router.put('/likeDislike', async (req, res) => {
+
+    const post = await Post.findByIdAndUpdate(
+        req.body.id,
+        {
+            "dislikes": req.body.dislikes,
+            "likes": req.body.likes
+        },
+        { new: true }
+    );
+    await post.save();
+    return res.send(post);
+});
+
 
 module.exports = router;
 
