@@ -9,6 +9,7 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
 
     //check if the friend id is in the database.
     const findUser = await User.findById(req.params.friendRequestId)
+    let errorMessage
 
     if (!findUser)
       return res.send('Friend id not found');
@@ -16,17 +17,21 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
     //check if a friend request was already submiited.
     const friendRequestPending = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "userId": req.params.friendRequestId, "friendStatus": 'Pending' });
     if (friendRequestPending.length > 0)
-      return res.send('Friend request has not been accepted yet.');
+      return res.send({ errorMessage: 'Friend request has not been accepted yet.' });
 
     //cant send friend request back to the sender vice versa. 
     const checkReverseSendRequest = await FriendStatus.find({ "userId": req.params.loggedInUserId, "requestedBy": req.params.friendRequestId, "friendStatus": 'Pending' });
     if (checkReverseSendRequest.length > 0)
-      return res.send('Sorry, you cant send a friend request to the person who sent you a friend request silly! How about accepting their invite?');
+      return res.send({ errorMessage: 'Sorry, you cant send a friend request to the person who sent you a friend request silly! How about accepting their invite?' });
 
     //check if the recipient is already a friend.
-    const friendRequestConfirmed = await FriendStatus.find({ $or:[ {'requestedBy':req.params.loggedInUserId}, {'userId':req.params.loggedInUserId} ] , "friendStatus": 'Confirmed' });
+    const friendRequestConfirmed = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.loggedInUserId }, { 'userId': req.params.friendRequestId }], "friendStatus": 'Confirmed' });
     if (friendRequestConfirmed.length > 0)
-      return res.send('You are already friends with this user.');
+      return res.send({ errorMessage: 'You are already friends with this user.' });
+      
+    const friendRequestConfirmed1 = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.friendRequestId }, { 'userId': req.params.loggedInUserId }], "friendStatus": 'Confirmed' });
+    if (friendRequestConfirmed1.length > 0)
+      return res.send({ errorMessage: 'You are already friends with this user.' });
 
     const friends = new FriendStatus({
       userId: req.params.friendRequestId,
@@ -45,7 +50,8 @@ router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
   try {
 
     let result = await FriendStatus.aggregate([
-      { $match: { "userId": req.params.loggedInUserId, "friendStatus": 'Pending' }
+      {
+        $match: { "userId": req.params.loggedInUserId, "friendStatus": 'Pending' }
       },
       { "$addFields": { "requestedBy": { "$toObjectId": "$requestedBy" } } },
       { $lookup: { from: "users", localField: "requestedBy", foreignField: "_id", as: "userInfo" } },
@@ -90,7 +96,7 @@ router.get('/friends/:loggedInUserId', async (req, res) => {
       findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
 
     //get friends from user collection
-    const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);    
+    const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
 
     return res.send(allMyFriends);
   } catch (ex) {
@@ -162,13 +168,13 @@ router.delete('/delete/:id', async (req, res) => {
 router.delete('/deleteFriend/:loggedInUserId/:userFriendId', async (req, res) => {
   try {
 
-    const findFriendId = await FriendStatus.findOne({ $or:[ {'requestedBy':req.params.loggedInUserId}, {'userId':req.params.loggedInUserId} ], $or:[ {'requestedBy':req.params.userFriendId}, {'userId':req.params.userFriendId} ] }).distinct('_id');
-    console.log(findFriendId)
-    if(!findFriendId.length) return res.send('Sorry unable to delete A-hole friend!');
+    const findFriendId = await FriendStatus.findOne({ $or: [{ 'requestedBy': req.params.loggedInUserId }, { 'userId': req.params.loggedInUserId }], $or: [{ 'requestedBy': req.params.userFriendId }, { 'userId': req.params.userFriendId }] }).distinct('_id');
     
+    if (!findFriendId.length) return res.send('Sorry unable to delete A-hole friend!');
+
     FriendStatus.findByIdAndRemove(findFriendId[0], function (err, post) {
       if (err) return next(err);
-      res.json({message: "A-hole friend deleted!"});
+      res.json({ message: "A-hole friend deleted!" });
     });
 
   } catch (ex) {
