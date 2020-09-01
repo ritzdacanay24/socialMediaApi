@@ -33,7 +33,9 @@ router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
         if(!findFriends.length)
         //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
         findFriends = await FriendStatus.find({ "userId": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
-        
+
+        //view user logged in posts
+        findFriends.push(req.params.loggedInUserId);
         let result = await Post.aggregate([
             {
                 $match: { 'userId': { $in: findFriends } }
