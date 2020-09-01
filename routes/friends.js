@@ -68,8 +68,6 @@ router.get('/pendingRequests/:loggedInUserId', async (req, res) => {
 
     ]);
 
-    if (!result.length) return res.send('Sorry you have no pending friend requests.');
-
     return res.send(result);
 
   } catch (ex) {
@@ -92,9 +90,7 @@ router.get('/friends/:loggedInUserId', async (req, res) => {
       findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
 
     //get friends from user collection
-    const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
-    if (!allMyFriends.length) return res.send('Sorry you have no friends');
-    
+    const allMyFriends = await User.find({ "_id": { $in: findFriends } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);    
 
     return res.send(allMyFriends);
   } catch (ex) {
@@ -118,8 +114,6 @@ router.get('/onlineFriends/:loggedInUserId', async (req, res) => {
 
     //get friends from user collection that is logged in
     const allMyFriends = await User.find({ "_id": { $in: findFriends }, "loginTime": { "$ne": null } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
-
-    if (!allMyFriends.length) return res.send('Sorry you have no friends online');
 
     //send friends online
     return res.send(allMyFriends);
