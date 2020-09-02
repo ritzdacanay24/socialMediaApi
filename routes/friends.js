@@ -25,13 +25,13 @@ router.post('/friendRequest/:loggedInUserId/:friendRequestId', async (req, res) 
       return res.send({ errorMessage: 'Sorry, you cant send a friend request to the person who sent you a friend request silly! How about accepting their invite?' });
 
     //check if the recipient is already a friend.
-    const friendRequestConfirmed = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.loggedInUserId }, { 'userId': req.params.friendRequestId }], "friendStatus": 'Confirmed' });
+    const friendRequestConfirmed = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.loggedInUserId, 'userId': req.params.friendRequestId }], "friendStatus": 'Confirmed' });
     if (friendRequestConfirmed.length > 0)
-      return res.send({ errorMessage: 'You are already friends with this user.' });
+      return res.send({ errorMessage: 'You are already friends with this user..' });
       
-    const friendRequestConfirmed1 = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.friendRequestId }, { 'userId': req.params.loggedInUserId }], "friendStatus": 'Confirmed' });
+    const friendRequestConfirmed1 = await FriendStatus.find({ $or: [{ 'requestedBy': req.params.friendRequestId, 'userId': req.params.loggedInUserId }], "friendStatus": 'Confirmed' });
     if (friendRequestConfirmed1.length > 0)
-      return res.send({ errorMessage: 'You are already friends with this user.' });
+      return res.send({ errorMessage: 'You are already friends with this user....' });
 
     const friends = new FriendStatus({
       userId: req.params.friendRequestId,
