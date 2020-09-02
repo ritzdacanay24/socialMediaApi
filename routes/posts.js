@@ -26,19 +26,19 @@ router.post('/', async (req, res) => {
 router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
     try {
 
-        let findFriends = [];
         //Confirmed friends. If the recipent accepts the friend request, get the id of that requestor.
-        findFriends = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('userId');
+        let findFriends = await FriendStatus.find({ "requestedBy": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('userId');
 
-        if (!findFriends.length)
-            //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
-            findFriends = await FriendStatus.find({ "userId": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
-
+        //Confirmed friends. If not the requestor but the recipent get the id of the requestor.
+        let findFriends1 = await FriendStatus.find({ "userId": req.params.loggedInUserId, "friendStatus": 'Confirmed' }).sort('-date').distinct('requestedBy');
+    
+        const joinPosts = [...findFriends, ...findFriends1];
+        joinPosts.push(req.params.loggedInUserId);
+        
         //view user logged in posts
-        findFriends.push(req.params.loggedInUserId);
         let result = await Post.aggregate([
             {
-                $match: { 'userId': { $in: findFriends } }
+                $match: { 'userId': { $in: joinPosts } }
             },
             {
                 $sort: { createdDate: -1 }
