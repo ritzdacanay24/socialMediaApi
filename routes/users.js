@@ -54,4 +54,25 @@ router.get('/:loggedInUserId', async (req, res) => {
     }
 })
 
+router.put('/updateImage', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.body.id,
+            {
+                profileImage: req.body.profileImage
+            },
+            { new: true }
+          );
+          
+          await user.save();
+          return res.send(user);
+    }
+
+    catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`)
+    }
+})
+
+
+
 module.exports = router
