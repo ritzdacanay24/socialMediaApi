@@ -86,7 +86,6 @@ router.get('/friends/:loggedInUserId', async (req, res) => {
   try {
 
     const loggedInUserId = req.params.loggedInUserId;
-    
 
     //Confirmed friends. If the recipient accepts the friend request, get the id of that requestor.
     let findFriends = await FriendStatus.find({ "requestedBy": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('userId');
@@ -110,17 +109,17 @@ router.get('/onlineFriends/:loggedInUserId', async (req, res) => {
   try {
 
     const loggedInUserId = req.params.loggedInUserId;
-    let findFriends = [];
 
     //Confirmed friends. If the recipient accepts the friend request, get the id of that requestor.
-    findFriends = await FriendStatus.find({ "requestedBy": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('userId');
+    let findFriends = await FriendStatus.find({ "requestedBy": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('userId');
 
-    if (!findFriends.length)
-      //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
-      findFriends = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
+    //Confirmed friends. If not the requestor but the recipient get the id of the requestor.
+    let findFriends1 = await FriendStatus.find({ "userId": loggedInUserId, "friendStatus": 'Confirmed' }).distinct('requestedBy');
+
+    const joinPosts = [...findFriends, ...findFriends1];
 
     //get friends from user collection that is logged in
-    const allMyFriends = await User.find({ "_id": { $in: findFriends }, "loginTime": { "$ne": null } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
+    const allMyFriends = await User.find({ "_id": { $in: joinPosts }, "loginTime": { "$ne": null } }, ['firstName', 'lastName', 'email', 'loginTime', 'profileImage']);
 
     //send friends online
     return res.send(allMyFriends);
