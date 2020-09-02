@@ -55,6 +55,7 @@ router.get('/viewFriendPosts/:loggedInUserId', async (req, res) => {
                     id: '$userInfo._id',
                     firstName: '$userInfo.firstName',
                     lastName: '$userInfo.lastName',
+                    profileImage: "$userInfo.profileImage",
                     comment: '$comment',
                     likes: '$likes',
                     dislikes: '$dislikes',

@@ -9,12 +9,12 @@ const userSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true },
     password: { type: String, minlength: 6, required: true },
     timeStamp: { type: Date, timeStamp: true, default: Date },
-    loginTime: { type: Date, timeStamp: true, default: Date },
-    profileImage: { type: String }
+    loginTime: { type: Date, timeStamp: true },
+    profileImage: { type: String, default: 'src/client/components/images/cloneold.png'}
 })
 
 userSchema.methods.generateAuthToken = function () {
-    return jwt.sign({ _id: this._id, firstName: this.firstName, email: this.email }, config.get('jwtSecret'));
+    return jwt.sign({ _id: this._id, firstName: this.firstName, email: this.email, profileImage: this.profileImage }, config.get('jwtSecret'));
 };
 
 const User = mongoose.model('User', userSchema);
